@@ -2,10 +2,16 @@
 
 A simple CLI tool to track tasks. Goes with with [mark](https://github.com/josiahdenton/mark)
 
+## Requirements
+
+- `go` is installed
+- nerd font for icons
+
 ## Install
 
-Assuming go is already installed, simply run
 ```
+git clone https://github.com/josiahdenton/task.git
+cd task
 go install .
 ```
 This installs `task` in `~/go/bin/`. To call `task` from anywher
