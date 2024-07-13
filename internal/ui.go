@@ -3,7 +3,6 @@ package internal
 // BUG: add subtasks, edit parent task children disappear
 
 import (
-	"fmt"
 	"log"
 	"slices"
 	"strings"
@@ -60,8 +59,9 @@ type Model struct {
 // location to persist tasks. If successful, will return a Model.
 // Panics on any error.
 func New(path string) *Model {
-	s := fmt.Sprintf("%s/task.db", path)
-	r, err := ConnectToDB(s)
+	// dbLocation := fmt.Sprintf("%s/task.db", path)
+	// r, err := ConnectToDB(dbLocation)
+	r, err := ConnectToDB(":memory:")
 	if err != nil {
 		log.Fatalf("failed to connect to DB %v", err)
 	}
@@ -110,7 +110,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.toast, cmd = m.toast.Update(msg)
 	cmds = append(cmds, cmd)
 
-	// always enable quit from anywhere
 	switch msg := msg.(type) {
 	case RefreshTasksMsg:
 		if m.modeFocus && m.taskFocused != nil {
@@ -136,6 +135,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.width = msg.Width
 		return m, tea.Batch(cmds...)
+	// always enable quit from anywhere
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.Quit) {
 			return m, tea.Quit
@@ -152,22 +152,37 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.IncreasePriority):
 			if selected := m.tasks.SelectedItem(); selected != nil {
 				task := selected.(*Task)
-				task.Priority++
+				index := m.tasks.Index()
+				if index == 0 {
+					return m, tea.Batch(cmds...)
+				}
+				above := m.tasks.Items()[index-1].(*Task)
+				task.Priority = above.Priority + 1
 				err := m.repository.EditTask(task)
+				m.tasks.CursorUp()
 				if err != nil {
 					log.Printf("failed to decrease priority %v", err)
-					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn), refreshTasks())...)
+					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn))...)
 				}
+				return m, tea.Batch(append(cmds, refreshTasks())...)
 			}
 		case key.Matches(msg, m.keys.DecreasePriority):
 			if selected := m.tasks.SelectedItem(); selected != nil {
 				task := selected.(*Task)
-				task.Priority--
+				index := m.tasks.Index()
+				items := m.tasks.Items()
+				if index == len(items)-1 {
+					return m, tea.Batch(cmds...)
+				}
+				below := items[index+1].(*Task)
+				task.Priority = below.Priority - 1
 				err := m.repository.EditTask(task)
+				m.tasks.CursorDown()
 				if err != nil {
 					log.Printf("failed to decrease priority %v", err)
-					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn), refreshTasks())...)
+					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn))...)
 				}
+				return m, tea.Batch(append(cmds, refreshTasks())...)
 			}
 		case key.Matches(msg, m.keys.ArchivedTaskToggle):
 			// can only archive at root
@@ -408,11 +423,13 @@ func filterToArchived(tasks []Task) []Task {
 
 func orderTasks(tasks []Task) []Task {
 	slices.SortFunc(tasks, func(a Task, b Task) int {
+		// higher ID < lower ID (acts as simple created at time)
 		if a.Priority == b.Priority {
 			return a.Id - b.Id
 		}
 
-		return a.Priority - b.Priority
+		// highest priority > lowest priority
+		return b.Priority - a.Priority
 	})
 	return tasks
 }

@@ -137,6 +137,7 @@ func (m *TaskDatabase) AddTask(task *Task) (*Task, error) {
 	// our ID should be max + 1
 	if task.Id == 0 { // != --> then it's an undo
 		task.Id = maxId + 1
+		task.Priority = task.Id
 	}
 
 	blob, err := json.Marshal(task)

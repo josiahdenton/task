@@ -77,7 +77,7 @@ func NewForm() *FormModel {
 	description.Focus()
 	description.Width = 60
 	description.CharLimit = 60
-	description.Prompt = "Name: "
+	description.Prompt = "Task: "
 	description.PromptStyle = formLabelStyle
 	description.Placeholder = "..."
 

@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -50,12 +49,11 @@ func renderTask(task *Task, selected bool) string {
 }
 
 func renderFocusedTask(task *Task) string {
-	log.Printf("rendering %v", task)
 	symbol, symbolStyle := ToSymbol(task.State, true)
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
 		symbolStyle.Render(symbol),
-		activeStyle.Render(task.Description),
+		alignStyle.Render(activeStyle.Render(task.Description)),
 	)
 }
 
