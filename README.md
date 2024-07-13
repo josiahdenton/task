@@ -37,12 +37,11 @@ task
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/03158540-6653-4a29-8e4f-e50dc9275db4">
 
 
-
-
 #### Progress
 
-Task can
+`task` can
 - [x] show task description
+- [ ] auto-complete when all sub-tasks are marked as done
 - [ ] display due date (relative)
 - [x] enable recursive subtasks
 - [x] archive tasks to move to a separate view without losing them
