@@ -9,6 +9,7 @@ type KeyMapList struct {
 	Focus              key.Binding
 	Return             key.Binding
 	Copy               key.Binding
+	Export             key.Binding
 	MoveStateForward   key.Binding
 	MoveStateBackward  key.Binding
 	IncreasePriority   key.Binding
@@ -30,6 +31,7 @@ func DefaultKeyMapList() KeyMapList {
 		Focus:              key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "focus")),
 		Return:             key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "return")),
 		Copy:               key.NewBinding(key.WithKeys(" "), key.WithHelp("space", "copy")),
+		Export:             key.NewBinding(key.WithKeys("x"), key.WithHelp("x", "export")),
 		MoveStateForward:   key.NewBinding(key.WithKeys("]"), key.WithHelp("]", "toggle status")),
 		MoveStateBackward:  key.NewBinding(key.WithKeys("["), key.WithHelp("[", "toggle status")),
 		IncreasePriority:   key.NewBinding(key.WithKeys("+"), key.WithHelp("+", "priority")),
