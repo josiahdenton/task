@@ -1,6 +1,6 @@
 # task
 
-A simple CLI tool to track tasks. Goes with with [mark]()
+A simple CLI tool to track tasks. Goes with with [mark](https://github.com/josiahdenton/mark)
 
 ## Install
 
