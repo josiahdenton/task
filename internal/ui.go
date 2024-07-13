@@ -371,6 +371,7 @@ func newList(tasks []Task) list.Model {
 	l.SetShowStatusBar(false)
 	l.DisableQuitKeybindings()
 	l.SetShowHelp(false)
+	l.SetFilteringEnabled(false)
 	return l
 }
 

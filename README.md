@@ -36,3 +36,4 @@ Task can
 - [x] archive tasks to move to a separate view without losing them
 - [ ] auto export completed / archived tasks to help with performance reviews
 - [ ] show help / controls at bottom
+- [ ] check if there's a need to enable filtering
