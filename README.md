@@ -25,10 +25,16 @@ task
 ```
 
 ##### Basic task list
-<img width="695" alt="usage_1" src="https://github.com/user-attachments/assets/1fe9eeae-ed93-491d-bbd2-2266e18bb78c">
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/fcffae72-e88a-41ed-be1b-012fd502659d">
 
 ##### Focus mode on one task with 3 subtasks
-<img width="695" alt="image" src="https://github.com/user-attachments/assets/e342d512-9faf-4b9e-beeb-d471ec590ded">
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/110c8ef1-2b9a-45cf-9e1b-5faca34271af">
+
+##### Help
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/40767ed0-8fd1-4b46-af0b-dac59c5b833f">
+
+##### Archived View
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/03158540-6653-4a29-8e4f-e50dc9275db4">
 
 
 
@@ -41,5 +47,5 @@ Task can
 - [x] enable recursive subtasks
 - [x] archive tasks to move to a separate view without losing them
 - [ ] auto export completed / archived tasks to help with performance reviews
-- [ ] show help / controls at bottom
+- [x] show help / controls at bottom
 - [ ] check if there's a need to enable filtering
