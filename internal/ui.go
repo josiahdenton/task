@@ -150,7 +150,25 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, m.keys.IncreasePriority):
+			if selected := m.tasks.SelectedItem(); selected != nil {
+				task := selected.(*Task)
+				task.Priority++
+				err := m.repository.EditTask(task)
+				if err != nil {
+					log.Printf("failed to decrease priority %v", err)
+					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn), refreshTasks())...)
+				}
+			}
 		case key.Matches(msg, m.keys.DecreasePriority):
+			if selected := m.tasks.SelectedItem(); selected != nil {
+				task := selected.(*Task)
+				task.Priority--
+				err := m.repository.EditTask(task)
+				if err != nil {
+					log.Printf("failed to decrease priority %v", err)
+					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn), refreshTasks())...)
+				}
+			}
 		case key.Matches(msg, m.keys.ArchivedTaskToggle):
 			// can only archive at root
 			if selected := m.tasks.SelectedItem(); selected != nil && !m.modeFocus {
@@ -158,7 +176,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				task.IsArchived = !task.IsArchived
 				err := m.repository.EditTask(task)
 				if err != nil {
-					log.Panicf("failed to archive task, reason %v", err)
+					log.Printf("failed to archive task, reason %v", err)
 					return m, tea.Batch(append(cmds, ShowToast("unable to archive task", ToastWarn))...)
 				}
 				return m, tea.Batch(append(cmds, ShowToast("archived task", ToastInfo), refreshTasks())...)
