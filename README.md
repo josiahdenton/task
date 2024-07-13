@@ -23,12 +23,12 @@ Run in any terminal
 ```
 task
 ```
+
 ##### Basic task list
 <img width="695" alt="usage_1" src="https://github.com/user-attachments/assets/1fe9eeae-ed93-491d-bbd2-2266e18bb78c">
 
 ##### Focus mode on one task with 3 subtasks
-<img width="691" alt="image" src="https://github.com/user-attachments/assets/e8126a78-f568-4549-8360-3896ed806c1a">
-
+<img width="695" alt="image" src="https://github.com/user-attachments/assets/e342d512-9faf-4b9e-beeb-d471ec590ded">
 
 
 
