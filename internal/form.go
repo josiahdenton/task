@@ -108,6 +108,7 @@ func (f *FormModel) View() string {
 	var b strings.Builder
 	b.WriteString("\n\n")
 	b.WriteString(f.description.View())
+	b.WriteString("\n")
 	return b.String()
 }
 

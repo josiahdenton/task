@@ -5,7 +5,7 @@ import "github.com/charmbracelet/lipgloss"
 var (
 	readyColor     = SecondaryGrayColor
 	focusedColor   = PrimaryColor
-	holdColor      = SecondaryGrayColor
+	holdColor      = PrimaryGrayColor
 	completedColor = AccentColor
 	urgentColor    = TertiaryColor
 )
@@ -26,7 +26,7 @@ func ToSymbol(state TaskState, extraSpace bool) (string, lipgloss.Style) {
 	case Focused:
 		return " ", focusedStyle
 	case Hold:
-		return " ", holdSytle
+		return " ", holdSytle
 	case Completed:
 		return " ", completedStyle
 	case Urgent:

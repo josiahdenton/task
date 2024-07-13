@@ -3,11 +3,13 @@ package internal
 // BUG: add subtasks, edit parent task children disappear
 
 import (
+	"fmt"
 	"log"
 	"slices"
 	"strings"
 
 	"github.com/atotto/clipboard"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,7 +19,7 @@ import (
 var (
 	contentStyle            = lipgloss.NewStyle().MarginLeft(2).MarginTop(1)
 	formKeyStyle            = lipgloss.NewStyle().Foreground(SecondaryGrayColor).Bold(true)
-	listTitleStyle          = lipgloss.NewStyle().Foreground(AccentColor).Bold(true)
+	listTitleStyle          = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
 	helpKeyStyle            = lipgloss.NewStyle().Foreground(SecondaryGrayColor).Bold(true)
 	helpKeyDescriptionStyle = lipgloss.NewStyle().Foreground(SecondaryGrayColor)
 )
@@ -40,6 +42,7 @@ func refreshTasks() tea.Cmd {
 
 type Model struct {
 	keys         KeyMapList
+	help         help.Model
 	repository   Repository
 	tasks        list.Model
 	toast        tea.Model
@@ -59,9 +62,9 @@ type Model struct {
 // location to persist tasks. If successful, will return a Model.
 // Panics on any error.
 func New(path string) *Model {
-	// dbLocation := fmt.Sprintf("%s/task.db", path)
-	// r, err := ConnectToDB(dbLocation)
-	r, err := ConnectToDB(":memory:")
+	dbLocation := fmt.Sprintf("%s/task.db", path)
+	r, err := ConnectToDB(dbLocation)
+	// r, err := ConnectToDB(":memory:")
 	if err != nil {
 		log.Fatalf("failed to connect to DB %v", err)
 	}
@@ -78,6 +81,7 @@ func New(path string) *Model {
 		tasks:      l,
 		toast:      NewToast(),
 		form:       NewForm(),
+		help:       help.New(),
 	}
 }
 
@@ -97,6 +101,8 @@ func (m *Model) View() string {
 		builder.WriteString(m.tasks.View())
 	}
 	builder.WriteString("\n")
+	builder.WriteString(m.help.View(m.keys))
+	builder.WriteString("\n")
 	builder.WriteString(m.toast.View())
 	return contentStyle.Render(builder.String())
 }
@@ -112,7 +118,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case RefreshTasksMsg:
-		if m.modeFocus && m.taskFocused != nil {
+		if m.modeArchived {
+			tasks, err := m.repository.AllTasks()
+			if err != nil {
+				log.Printf("AllTasks failed with reason %v", err)
+			}
+			tasks = filterToArchived(tasks)
+			m.tasks.SetItems(transformToItems(orderTasks(tasks)))
+		} else if m.modeFocus && m.taskFocused != nil {
 			tasks, err := m.repository.AllTasksWithIds(m.taskFocused.SubTasks)
 			if err != nil {
 				log.Printf("failed to get all tasks by id %v", err)
@@ -149,6 +162,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch {
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+			return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keys.IncreasePriority):
 			if selected := m.tasks.SelectedItem(); selected != nil {
 				task := selected.(*Task)
@@ -196,7 +212,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, tea.Batch(append(cmds, ShowToast("archived task", ToastInfo), refreshTasks())...)
 			}
-		case key.Matches(msg, m.keys.FilterToggle):
+		case key.Matches(msg, m.keys.ToggleArchived):
 			if m.modeFocus { // only allow the archived filtering at the root
 				break
 			}
@@ -210,7 +226,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				tasks = filterOutArchived(tasks)
 			}
-			m.tasks.SetItems(transformToItems(tasks))
+			m.tasks.SetItems(transformToItems(orderTasks(tasks)))
 		case key.Matches(msg, m.keys.MoveStateForward):
 			if selected := m.tasks.SelectedItem(); selected != nil {
 				task := selected.(*Task)
