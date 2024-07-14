@@ -163,7 +163,27 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, m.keys.Export):
-			// TODO: implement
+			if !m.modeArchived {
+				return m, tea.Batch(append(cmds, ShowToast("only supports exporting archived", ToastWarn))...)
+			}
+
+			items := m.tasks.Items()
+			var builder strings.Builder
+			builder.WriteString("### Archived Tasks\n")
+			for _, item := range items {
+				task := item.(*Task)
+				builder.WriteString("- [x] ")
+				builder.WriteString(task.Description)
+				builder.WriteString("\n")
+				builder.WriteString("	- (add impact here)\n")
+				builder.WriteString("	- (add resources here)\n")
+			}
+			err := clipboard.WriteAll(builder.String())
+			if err != nil {
+				log.Printf("failed to copy to clipboard: %v", err)
+				return m, tea.Batch(append(cmds, ShowToast("failed to copy to clipboard", ToastWarn))...)
+			}
+			return m, tea.Batch(append(cmds, ShowToast("copied export to clipboard", ToastInfo))...)
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, tea.Batch(cmds...)
@@ -174,14 +194,21 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if index == 0 {
 					return m, tea.Batch(cmds...)
 				}
-				above := m.tasks.Items()[index-1].(*Task)
-				task.Priority = above.Priority + 1
+				task.Priority = index - 1
 				err := m.repository.EditTask(task)
-				m.tasks.CursorUp()
 				if err != nil {
 					log.Printf("failed to decrease priority %v", err)
 					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn))...)
 				}
+				above := m.tasks.Items()[index-1].(*Task)
+				above.Priority = index
+				err = m.repository.EditTask(above)
+				if err != nil {
+					log.Printf("failed to decrease priority %v", err)
+					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn))...)
+				}
+
+				m.tasks.CursorUp()
 				return m, tea.Batch(append(cmds, refreshTasks())...)
 			}
 		case key.Matches(msg, m.keys.DecreasePriority):
@@ -192,14 +219,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if index == len(items)-1 {
 					return m, tea.Batch(cmds...)
 				}
-				below := items[index+1].(*Task)
-				task.Priority = below.Priority - 1
+				task.Priority = index + 1
 				err := m.repository.EditTask(task)
-				m.tasks.CursorDown()
 				if err != nil {
 					log.Printf("failed to decrease priority %v", err)
 					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn))...)
 				}
+
+				below := items[index+1].(*Task)
+				below.Priority = index
+				err = m.repository.EditTask(below)
+				if err != nil {
+					log.Printf("failed to decrease priority %v", err)
+					return m, tea.Batch(append(cmds, ShowToast("unable to decrease priority", ToastWarn))...)
+				}
+
+				m.tasks.CursorDown()
 				return m, tea.Batch(append(cmds, refreshTasks())...)
 			}
 		case key.Matches(msg, m.keys.ArchivedTaskToggle):
@@ -353,6 +388,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		log.Printf("task created %+v", msg.task)
 		if m.modeFocus && m.taskFocused != nil {
 			msg.task.IsSubTask = true
+			msg.task.Priority = len(m.tasks.Items())
 			task, err := m.repository.AddTask(&msg.task)
 			if err != nil {
 				log.Printf("%v", err)
@@ -441,13 +477,7 @@ func filterToArchived(tasks []Task) []Task {
 
 func orderTasks(tasks []Task) []Task {
 	slices.SortFunc(tasks, func(a Task, b Task) int {
-		// higher ID < lower ID (acts as simple created at time)
-		if a.Priority == b.Priority {
-			return a.Id - b.Id
-		}
-
-		// highest priority > lowest priority
-		return b.Priority - a.Priority
+		return a.Priority - b.Priority
 	})
 	return tasks
 }
