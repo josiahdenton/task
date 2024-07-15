@@ -53,7 +53,7 @@ func (k KeyMapList) ShortHelp() []key.Binding {
 func (k KeyMapList) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Focus, k.Return, k.ToggleArchived},
-		{k.Add, k.Edit, k.Copy, k.Undo, k.ArchivedTaskToggle},
+		{k.Add, k.Edit, k.Copy, k.Undo, k.ArchivedTaskToggle, k.Export},
 		{k.MoveStateForward, k.MoveStateBackward, k.IncreasePriority, k.DecreasePriority},
 		{k.Help, k.Quit},
 	}
