@@ -128,9 +128,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else if m.modeFocus && m.taskFocused != nil {
 			tasks, err := m.repository.AllTasksWithIds(m.taskFocused.SubTasks)
 			if err != nil {
-				log.Printf("failed to get all tasks by id %v", err)
-				return m, tea.Batch(append(cmds, ShowToast("failed to get all tasks", ToastWarn))...)
+				log.Printf("(refresh) failed to get all tasks by id %v", err)
+				return m, tea.Batch(append(cmds, ShowToast("failed to refresh", ToastWarn))...)
 			}
+			if allTasksCompleted(tasks) {
+				m.taskFocused.State = Completed
+				err := m.repository.EditTask(m.taskFocused)
+				if err != nil {
+					log.Printf("(refresh) failed to edit task %v", err)
+					return m, tea.Batch(append(cmds, ShowToast("failed to refresh", ToastWarn))...)
+				}
+			}
+
 			m.tasks.SetItems(transformToItems(orderTasks(tasks)))
 		} else {
 			tasks, err := m.repository.AllTasks()
@@ -268,10 +277,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if selected := m.tasks.SelectedItem(); selected != nil {
 				task := selected.(*Task)
 				task.State = (task.State + 1) % TotalStates
+				if task.State == Focused {
+					task.Open()
+				} else if task.State == Completed {
+					task.Close()
+				}
 				err := m.repository.EditTask(task)
 				if err != nil {
 					return m, tea.Batch(append(cmds, ShowToast("failed to toggle task", ToastWarn))...)
 				}
+				// refresh to check if focused task needs an update as well
+				return m, tea.Batch(append(cmds, refreshTasks())...)
 			}
 		case key.Matches(msg, m.keys.MoveStateBackward):
 			if selected := m.tasks.SelectedItem(); selected != nil {
@@ -281,12 +297,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					task.State--
 				}
+				if task.State == Focused {
+					task.Open()
+				} else if task.State == Completed {
+					task.Close()
+				}
 				err := m.repository.EditTask(task)
 				if err != nil {
 					return m, tea.Batch(append(cmds, ShowToast("failed to toggle task", ToastWarn))...)
 				}
+				// refresh to check if focused task needs an update as well
+				return m, tea.Batch(append(cmds, refreshTasks())...)
 			}
-		case key.Matches(msg, m.keys.Undo): // FIXME: add ability to undo archiving...
+		case key.Matches(msg, m.keys.Undo):
 			if len(m.deleted) == 0 {
 				return m, tea.Batch(append(cmds, ShowToast("no more to undo", ToastInfo))...)
 			}
@@ -480,4 +503,13 @@ func orderTasks(tasks []Task) []Task {
 		return a.Priority - b.Priority
 	})
 	return tasks
+}
+
+func allTasksCompleted(tasks []Task) bool {
+	for _, task := range tasks {
+		if task.State != Completed {
+			return false
+		}
+	}
+	return true
 }

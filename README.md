@@ -39,12 +39,10 @@ task
 
 #### Progress
 
-`task` can
+- [ ] improve error logs in `log` file
 - [x] show task description
-- [ ] auto-complete when all sub-tasks are marked as done
-- [ ] display due date (relative)
+- [x] auto-complete when all sub-tasks are marked as done
 - [x] enable recursive subtasks
 - [x] archive tasks to move to a separate view without losing them
-- [ ] auto export completed / archived tasks to help with performance reviews
+- [x] auto export completed / archived tasks to help with performance reviews
 - [x] show help / controls at bottom
-- [ ] check if there's a need to enable filtering

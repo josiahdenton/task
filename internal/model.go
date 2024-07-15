@@ -1,6 +1,10 @@
 package internal
 
-import "slices"
+import (
+	"reflect"
+	"slices"
+	"time"
+)
 
 // the DB will literally just be ID and JSON blob
 
@@ -23,8 +27,8 @@ type Task struct {
 	State       TaskState `json:"state"`
 	Priority    int       `json:"priority"`
 	SubTasks    []int     `json:"sub_tasks"`
-	Start       string    `json:"start"` // I don't know the data type... some epoch time??
-	End         string    `json:"end"`   // I don't know the data type...
+	Start       time.Time `json:"start"` // I don't know the data type... some epoch time??
+	End         time.Time `json:"end"`   // I don't know the data type...
 }
 
 func (t *Task) FilterValue() string {
@@ -46,4 +50,14 @@ func (t *Task) RemoveSubTask(id int) bool {
 	return false
 }
 
-// TODO: func to set times...
+func (t *Task) Open() {
+	// can only be started once
+	if reflect.ValueOf(t.Start).IsZero() {
+		t.Start = time.Now()
+	}
+}
+
+func (t *Task) Close() {
+	// allow for re-opening a task
+	t.End = time.Now()
+}

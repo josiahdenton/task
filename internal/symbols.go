@@ -20,7 +20,6 @@ var (
 
 func ToSymbol(state TaskState, extraSpace bool) (string, lipgloss.Style) {
 	switch state {
-	// FIXME: add space by extracting out const to var
 	case Ready:
 		return " ", readyStyle
 	case Focused:
