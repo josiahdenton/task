@@ -40,6 +40,7 @@ task
 #### Progress
 
 - [ ] improve error logs in `log` file
+- [x] show total time spent working on task in focused view
 - [x] show task description
 - [x] auto-complete when all sub-tasks are marked as done
 - [x] enable recursive subtasks

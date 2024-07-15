@@ -29,6 +29,7 @@ var (
 	defaultStyle = lipgloss.NewStyle().Foreground(SecondaryGrayColor).Width(60).PaddingRight(2)
 	cursorStyle  = lipgloss.NewStyle().Foreground(PrimaryColor)
 	alignStyle   = lipgloss.NewStyle().PaddingLeft(1)
+	timeStyle    = lipgloss.NewStyle().PaddingLeft(1).Foreground(PrimaryGrayColor)
 )
 
 func renderTask(task *Task, selected bool) string {
@@ -54,6 +55,7 @@ func renderFocusedTask(task *Task) string {
 		lipgloss.Left,
 		symbolStyle.Render(symbol),
 		alignStyle.Render(activeStyle.Render(task.Description)),
+		timeStyle.Render(task.TimeWorked()),
 	)
 }
 

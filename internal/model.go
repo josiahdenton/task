@@ -50,6 +50,18 @@ func (t *Task) RemoveSubTask(id int) bool {
 	return false
 }
 
+func (t *Task) TimeWorked() string {
+	if reflect.ValueOf(t.Start).IsZero() && reflect.ValueOf(t.End).IsZero() {
+		dur := t.Start.Sub(t.End)
+		return dur.String()
+	} else if reflect.ValueOf(t.End).IsZero() {
+		dur := time.Now().Sub(t.Start)
+		return dur.String()
+	}
+	dur := t.End.Sub(t.Start)
+	return dur.String()
+}
+
 func (t *Task) Open() {
 	// can only be started once
 	if reflect.ValueOf(t.Start).IsZero() {
