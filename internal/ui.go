@@ -95,13 +95,16 @@ func (m *Model) View() string {
 		builder.WriteString(m.form.View())
 	} else if m.modeFocus && m.taskFocused != nil {
 		builder.WriteString(renderFocusedTask(m.taskFocused))
+		builder.WriteString("\n")
 		builder.WriteString(m.tasks.View())
+	} else if m.help.ShowAll {
+		builder.WriteString(m.help.View(m.keys))
 	} else {
 		builder.WriteString(renderHeader(m.modeArchived))
 		builder.WriteString(m.tasks.View())
+		builder.WriteString("\n")
+		builder.WriteString(m.help.View(m.keys))
 	}
-	builder.WriteString("\n")
-	builder.WriteString(m.help.View(m.keys))
 	builder.WriteString("\n")
 	builder.WriteString(m.toast.View())
 	return contentStyle.Render(builder.String())
