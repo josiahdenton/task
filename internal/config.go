@@ -25,8 +25,8 @@ type KeyMapList struct {
 
 func DefaultKeyMapList() KeyMapList {
 	return KeyMapList{
-		Up:                 key.NewBinding(key.WithKeys("k/↑", "up"), key.WithHelp("k", "up")),
-		Down:               key.NewBinding(key.WithKeys("j/↓", "down"), key.WithHelp("j", "down")),
+		Up:                 key.NewBinding(key.WithKeys("k", "up", "ctrl+p"), key.WithHelp("k/↑/ctrl+p", "up")),
+		Down:               key.NewBinding(key.WithKeys("j", "down", "ctrl+n"), key.WithHelp("j/↓/ctrl+n", "down")),
 		Add:                key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add")),
 		Focus:              key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "focus")),
 		Return:             key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "return")),

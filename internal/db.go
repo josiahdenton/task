@@ -30,7 +30,7 @@ we can use the following in our refactor to setup the many to many connection
 CREATE TABLE IF NOT EXISTS tasks_to_tasks (
   id SERIAL PRIMARY KEY,
   task_id_parent INTEGER NOT NULL,
-  task_id_child INTEGER NOT NULL,
+  task_id_child INTEGER NOT NULL
   )
 
 we would combine this with the above schema
@@ -60,7 +60,7 @@ type TaskDatabase struct {
 }
 
 func (m *TaskDatabase) AllTasksWithIds(ids []int) ([]Task, error) {
-	documents := []Document{}
+	var documents []Document
 	err := m.db.Select(&documents, "SELECT * FROM tasks ORDER BY doc_id ASC")
 	if err != nil {
 		return nil, fmt.Errorf("failed to select all tasks %w", err)
@@ -82,7 +82,7 @@ func (m *TaskDatabase) AllTasksWithIds(ids []int) ([]Task, error) {
 }
 
 func (m *TaskDatabase) AllTasks() ([]Task, error) {
-	documents := []Document{}
+	var documents []Document
 	err := m.db.Select(&documents, "SELECT * FROM tasks WHERE hidden=FALSE ORDER BY doc_id ASC")
 	if err != nil {
 		return nil, fmt.Errorf("failed to select all tasks %w", err)
@@ -102,7 +102,7 @@ func (m *TaskDatabase) AllTasks() ([]Task, error) {
 }
 
 func (m *TaskDatabase) maxId() (int, error) {
-	documents := []Document{}
+	var documents []Document
 	err := m.db.Select(&documents, "SELECT * FROM tasks WHERE doc_id = (SELECT MAX(doc_id) FROM tasks)")
 	if err != nil {
 		return 0, fmt.Errorf("could not get max id %w", err)

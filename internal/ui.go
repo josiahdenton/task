@@ -1,6 +1,8 @@
 package internal
 
 // BUG: add subtasks, edit parent task children disappear
+// TODO: test
+// FIXME: test
 
 import (
 	"fmt"
@@ -17,11 +19,8 @@ import (
 )
 
 var (
-	contentStyle            = lipgloss.NewStyle().MarginLeft(2).MarginTop(1)
-	formKeyStyle            = lipgloss.NewStyle().Foreground(SecondaryGrayColor).Bold(true)
-	listTitleStyle          = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
-	helpKeyStyle            = lipgloss.NewStyle().Foreground(SecondaryGrayColor).Bold(true)
-	helpKeyDescriptionStyle = lipgloss.NewStyle().Foreground(SecondaryGrayColor)
+	contentStyle   = lipgloss.NewStyle().MarginLeft(2).MarginTop(1)
+	listTitleStyle = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
 )
 
 type Repository interface {
@@ -73,10 +72,11 @@ func New(path string) *Model {
 	if err != nil {
 		log.Fatalf("failed to get all tasks %v", err)
 	}
-	l := newList(orderTasks(filterOutArchived(tasks)))
+    keys := DefaultKeyMapList()
+	l := newList(orderTasks(filterOutArchived(tasks)), keys)
 
 	return &Model{
-		keys:       DefaultKeyMapList(),
+		keys:       keys,
 		repository: r,
 		tasks:      l,
 		toast:      NewToast(),
@@ -318,7 +318,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			lastRemoved := m.deleted[len(m.deleted)-1]
 			m.deleted = m.deleted[:len(m.deleted)-1]
-			m.repository.AddTask(lastRemoved)
+			_, err := m.repository.AddTask(lastRemoved)
+			if err != nil {
+				log.Printf("failed to undo, reason: %v", err)
+				return m, tea.Batch(append(cmds, ShowToast("failed to undo", ToastInfo))...)
+			}
 			if m.modeFocus && m.taskFocused != nil {
 				m.taskFocused.SubTasks = append(m.taskFocused.SubTasks, *&lastRemoved.Id)
 				err := m.repository.EditTask(m.taskFocused)
@@ -458,9 +462,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func newList(tasks []Task) list.Model {
+func newList(tasks []Task, keyMap KeyMapList) list.Model {
 	items := transformToItems(tasks)
 	l := list.New(items, delegate{}, 30, 15)
+    l.KeyMap.CursorUp = keyMap.Up
+    l.KeyMap.CursorDown = keyMap.Down
 	l.Styles.Title = listTitleStyle
 	l.Title = ""
 	l.SetShowStatusBar(false)
