@@ -47,3 +47,4 @@ task
 - [x] archive tasks to move to a separate view without losing them
 - [x] auto export completed / archived tasks to help with performance reviews
 - [x] show help / controls at bottom
+
